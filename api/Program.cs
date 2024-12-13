@@ -1,11 +1,14 @@
 using AzureBlobApi.Middleware;
 using AzureBlobApi.Services;
-using Microsoft.AspNetCore.Diagnostics;
+using AzureStorageApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddScoped<IBlobService, BlobService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<ITableStorageService, TableStorageService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<IQueueStorageService, QueueStorageService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

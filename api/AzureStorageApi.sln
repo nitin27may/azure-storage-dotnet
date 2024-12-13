@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32819.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureBlobApi", "AzureBlobApi.csproj", "{2A91856F-D2D8-4A23-B4F5-24769F854514}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStorageApi", "AzureStorageApi.csproj", "{2A91856F-D2D8-4A23-B4F5-24769F854514}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
