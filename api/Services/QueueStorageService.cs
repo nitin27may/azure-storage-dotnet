@@ -8,7 +8,7 @@ public class QueueStorageService : IQueueStorageService
 
     public QueueStorageService(IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("AzureBlobStorage");
+        var connectionString = configuration.GetConnectionString("AzureStorage");
         _queueServiceClient = new QueueServiceClient(connectionString);
     }
 

@@ -8,7 +8,7 @@ public class TableStorageService : ITableStorageService
 
     public TableStorageService(IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("AzureBlobStorage");
+        var connectionString = configuration.GetConnectionString("AzureStorage");
         _tableServiceClient = new TableServiceClient(connectionString);
     }
 

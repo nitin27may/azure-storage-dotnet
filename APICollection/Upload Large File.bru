@@ -1,0 +1,17 @@
+meta {
+  name: Upload Large File
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/blob/upload-large
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  containerName: newtest
+  blobName: VideoMP4_Bike.mp4
+  file: @file(C:\Users\nitin\Downloads\sample_3840x2160.mp4)
+}

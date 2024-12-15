@@ -8,7 +8,7 @@ public class FileStorageService : IFileStorageService
 
     public FileStorageService(IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("AzureBlobStorage");
+        var connectionString = configuration.GetConnectionString("AzureStorage");
         _shareServiceClient = new ShareServiceClient(connectionString);
     }
 
