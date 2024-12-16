@@ -10,7 +10,7 @@
 
   <!-- Video Streaming -->
   <video *ngIf="data.sasUri && data.sasUri" controls width="800">
-    <source [src]="data.sasUrl" type="video/mp4" />
+    <source [src]="environment.apiEndpoint + '/blob/download?containerName=my-container&blobName=' +data.name" type="video/mp4" />
     Your browser does not support the video tag.
   </video>
 

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
+import { environment } from "../environments/environment";
 
 @Injectable({ providedIn: 'root' })
 export class StorageService {
   private readonly chunkSize = 5 * 1024 * 1024; // 5 MB per chunk
-  private baseUrl = 'https://localhost:7149/api';
+  private baseUrl = environment.apiEndpoint;
 
   constructor(private http: HttpClient) {}
 

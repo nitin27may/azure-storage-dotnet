@@ -1,6 +1,7 @@
 import { CommonModule } from "@angular/common";
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { environment } from "../../environments/environment";
 
 @Component({
   selector: 'app-blob-details',
@@ -9,6 +10,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
   imports: [CommonModule]
 })
 export class BlobDetailsDialogComponent {
+
+  environment = environment;
   constructor(
     public dialogRef: MatDialogRef<BlobDetailsDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
@@ -17,4 +20,7 @@ export class BlobDetailsDialogComponent {
   closeDialog(): void {
     this.dialogRef.close();
   }
+
+
+
 }

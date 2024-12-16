@@ -22,8 +22,11 @@
     </mat-list-item>
   </mat-list>
 
-  <button mat-raised-button color="primary" [disabled]="files.length === 0" (click)="uploadFiles()">
-    Upload Files
+  <button mat-raised-button color="primary" [disabled]="files.length === 0" (click)="uploadFileStream()">
+    Upload Files Stream
+  </button>
+  <button mat-raised-button color="secondary" [disabled]="files.length === 0" (click)="uploadFilesChunk()">
+    upload Files Chunk
   </button>
 
   <mat-progress-bar *ngIf="uploading" mode="determinate" [value]="progress"></mat-progress-bar>

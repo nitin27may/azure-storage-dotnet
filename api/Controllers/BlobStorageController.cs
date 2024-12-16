@@ -1,7 +1,6 @@
 ﻿using AzureBlobApi.Services;
 using AzureStorageApi.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 
 namespace AzureBlobApi.Controllers;
 
@@ -36,8 +35,6 @@ public class BlobStorageController : ControllerBase
     }
 
     [HttpPost("stream-upload")]
-    [RequestSizeLimit(long.MaxValue)] // Remove size limits for testing
-    [RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue)]
     public async Task<IActionResult> StreamUploadAsync()
     {
         try
@@ -125,14 +122,5 @@ public class BlobStorageController : ControllerBase
     {
         var blobs = await _blobStorageService.GetAllBlobsAsync(containerName, path, true, DateTimeOffset.UtcNow.AddHours(1));
         return Ok(blobs);
-    }
-    private string GetMimeType(string fileName)
-    {
-        var provider = new FileExtensionContentTypeProvider();
-        if (provider.TryGetContentType(fileName, out string contentType))
-        {
-            return contentType;
-        }
-        return "application/octet-stream"; // Default content type for unknown files
     }
 }

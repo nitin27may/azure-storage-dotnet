@@ -52,7 +52,7 @@ export class FileUploadComponent {
     this.files.splice(index, 1);
   }
 
-  uploadFiles1(): void {
+  uploadFilesChunk(): void {
     this.uploading = true;
     if (!this.files.length) {
       alert('Please select a file first!');
@@ -86,6 +86,36 @@ export class FileUploadComponent {
     });
 
   }
+
+
+  async uploadFileStream(): Promise<void> {
+    if (!this.files) {
+      alert('Please select a file!');
+      return;
+    }
+    this.uploading = true;
+    const containerName = 'my-container'; // Replace with your container name
+    const blobName = this.files[0].name;
+
+    this.progress$.subscribe({
+      next: (value) => {
+        this.progress = value;
+        console.log(`Progress: ${value}%`);
+      },
+      error: (error) => {
+        console.error('Progress subscription error:', error);
+      },
+    });
+    try {
+      await this.storageService.streamUpload(this.files[0], containerName, blobName, this.progress$);
+      this.showToast('All files uploaded successfully!', 'success');
+    } catch (error) {
+      alert('Failed to upload file.');
+    } finally {
+      this.uploading = false;
+    }
+  }
+
   reset(): void {
     this.files = []; // Clear the files array
     this.progress = 0; // Reset progress
@@ -117,33 +147,5 @@ export class FileUploadComponent {
       verticalPosition: 'top', // Position: top
       panelClass: [panelClass], // Custom panel class for styling
     });
-  }
-
-  async uploadFiles(): Promise<void> {
-    if (!this.files) {
-      alert('Please select a file!');
-      return;
-    }
-    this.uploading = true;
-    const containerName = 'my-container'; // Replace with your container name
-    const blobName = this.files[0].name;
-
-    this.progress$.subscribe({
-      next: (value) => {
-        this.progress = value;
-        console.log(`Progress: ${value}%`);
-      },
-      error: (error) => {
-        console.error('Progress subscription error:', error);
-      },
-    });
-    try {
-      await this.storageService.streamUpload(this.files[0], containerName, blobName, this.progress$);
-      this.showToast('All files uploaded successfully!', 'success');
-    } catch (error) {
-      alert('Failed to upload file.');
-    } finally {
-      this.uploading = false;
-    }
   }
 }
