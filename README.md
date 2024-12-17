@@ -15,17 +15,22 @@ It provides robust examples for handling Azure Blob Storage, including three typ
 This repository is an excellent starting point for developers looking to integrate Azure Blob Storage in their projects with modern web technologies.
 
 ---
-
 ## Features
+A complete backend and frontend project structure to show case File operations (CRUD) for Azure Storage
 
 ### Backend (.NET 9 API)
-- **Azure Blob Storage Integration**: Includes complete implementation for uploading, downloading, and managing files.
-- **API Endpoints**: Demonstrates three upload strategies—file upload, chunk upload, and stream upload.
+- [x] **Azure Blob Storage Integration**: Includes complete implementation for uploading, downloading, and managing files.
+- [ ] **Azure Table Storage Integration**: CRUD example for table records.
+- [ ] **Azure File Share Integration**: Includes complete implementation for uploading, downloading, and managing files.
 
 ### Frontend (Angular 19 with Material Design)
-- **File Management UI**: A user-friendly interface for file upload and management.
+- [x] **File Management UI**: A user-friendly interface for file upload and management.
 
----
+### Dockerized Setup
+- [ ] Docker-Compose for Multi-Container Orchestration with NGINX as Load Balancer
+- [ ] Health Checks
+- [ ] Docker Debug mode with hot reload for the API and UI
+- [ ] Docker Production version
 
 ## Getting Started
 
