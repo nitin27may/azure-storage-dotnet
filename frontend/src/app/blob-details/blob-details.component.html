@@ -1,0 +1,21 @@
+<h1 mat-dialog-title>Blob Details</h1>
+<div mat-dialog-content>
+  <p><strong>Name:</strong> {{ data.name }}</p>
+  <p><strong>Created On:</strong> {{ data.createdOn | date: 'short' }}</p>
+
+  <p *ngIf="data.sasUri">
+    <strong>SAS URL:</strong>
+    <a href="{{ data.sasUri }}" target="_blank">Open in New Tab</a>
+  </p>
+
+  <!-- Video Streaming -->
+  <video *ngIf="data.sasUri && data.sasUri" controls width="800">
+    <source [src]="environment.apiEndpoint + '/blob/download?containerName=my-container&blobName=' +data.name" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+
+</div>
+
+<div mat-dialog-actions>
+  <button mat-button (click)="closeDialog()">Close</button>
+</div>

@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Azure Storage API Collection",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
