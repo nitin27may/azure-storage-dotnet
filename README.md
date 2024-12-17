@@ -1,4 +1,4 @@
-# Azure Blob Storage Example with .NET 9 API and Angular 19
+# Azure Blob Storage Example with .NET API and Angular
 
 ## About the Repository
 This repository showcases a comprehensive example of Azure Blob Storage integration using a modern tech stack:
@@ -21,12 +21,9 @@ This repository is an excellent starting point for developers looking to integra
 ### Backend (.NET 9 API)
 - **Azure Blob Storage Integration**: Includes complete implementation for uploading, downloading, and managing files.
 - **API Endpoints**: Demonstrates three upload strategies—file upload, chunk upload, and stream upload.
-- **Scalable Architecture**: Designed with scalability and performance in mind.
 
 ### Frontend (Angular 19 with Material Design)
 - **File Management UI**: A user-friendly interface for file upload and management.
-- **Responsive Design**: Built with Angular Material Design for a polished and responsive user experience.
-- **Real-Time Feedback**: Progress bars and notifications for upload operations.
 
 ---
 
@@ -38,7 +35,7 @@ This repository is an excellent starting point for developers looking to integra
   - Azure Storage Account with Blob Storage
   - IDE: Visual Studio or VS Code
 - **Frontend Requirements**:
-  - Node.js (v18 or higher)
+  - Node.js (v20 or higher)
   - Angular CLI
   - IDE: VS Code or any preferred code editor
 
@@ -58,9 +55,8 @@ cd azure-storage-dotnet
 
 ```json
 {
-  "AzureBlobStorage": {
-    "ConnectionString": "<Your_Connection_String>",
-    "ContainerName": "<Your_Container_Name>"
+  "ConnectionStrings": {
+    "AzureStorage": "<Your_Connection_String>"
   }
 }
 ```
@@ -86,17 +82,7 @@ ng serve
 
 ## API Endpoints
 
-### File Upload API
-- **Endpoint**: `POST /api/upload/file`
-- **Description**: Uploads a single file directly to Azure Blob Storage.
-
-### Chunk Upload API
-- **Endpoint**: `POST /api/upload/chunk`
-- **Description**: Uploads large files in smaller chunks.
-
-### Stream Upload API
-- **Endpoint**: `POST /api/upload/stream`
-- **Description**: Streams file data directly to Azure Blob Storage.
+Please refer the API Collection folder, it has all endpoints example. You can use Bruno client for it.
 
 ---
 
