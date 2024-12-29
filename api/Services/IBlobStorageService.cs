@@ -4,9 +4,9 @@ namespace AzureBlobApi.Services;
 
 public interface IBlobStorageService
 {
-    Task UploadBlobAsync(string containerName, string blobName, Stream content);
-    Task UploadLargeBlobAsync(string containerName, string blobName, Stream content, int blockSize = 4 * 1024 * 1024);
-    Task UploadChunkAsync(string containerName, string blobName, Stream chunkData, int chunkIndex, int totalChunks);
+    Task UploadBlobAsync(string containerName, string blobName, Stream content, string contentType);
+    Task UploadLargeBlobAsync(string containerName, string blobName, Stream content, string contentType, int blockSize = 4 * 1024 * 1024);
+    Task UploadChunkAsync(string containerName, string blobName, Stream chunkData, int chunkIndex, int totalChunks, string contentType);
     Task<Stream> DownloadBlobAsync(string containerName, string blobName);
     Task<byte[]> GetBlobAsByteArrayAsync(string containerName, string blobName);
     Task<string> GetBlobSasUriAsync(string containerName, string blobName, DateTimeOffset expiryTime);

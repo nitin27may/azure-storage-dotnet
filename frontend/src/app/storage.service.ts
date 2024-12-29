@@ -10,16 +10,20 @@ export class StorageService {
 
   constructor(private http: HttpClient) {}
 
-  uploadFile(file: File): Observable<any> {
+  uploadFile(file: File, containerName: string, blobName: string): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post(`${this.baseUrl}/upload`, formData);
+    formData.append('containerName', containerName);
+    formData.append('blobName', blobName);
+    return this.http.post(`${this.baseUrl}/blob/upload`, formData);
   }
 
-  uploadLargeFile(file: File): Observable<any> {
+  uploadLargeFile(file: File, containerName: string, blobName: string): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post(`${this.baseUrl}/upload`, formData);
+    formData.append('containerName', containerName);
+    formData.append('blobName', blobName);
+    return this.http.post(`${this.baseUrl}/blob/upload-large`, formData);
   }
 
   getFiles(containerName: string): Observable<any[]> {
@@ -27,7 +31,7 @@ export class StorageService {
   }
 
   deleteFile(fileName: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/delete/${fileName}`);
+    return this.http.delete(`${this.baseUrl}/blob/delete/${fileName}`);
   }
 
   uploadChunkFile(file: File, containerName: string): Observable<any> {
@@ -104,22 +108,17 @@ export class StorageService {
       };
     });
   }
-  async streamUpload(file: File, containerName: string, blobName: string, progress$: Subject<number>): Promise<void> {
+  streamUpload(file: File, containerName: string, blobName: string): Observable<void> {
     const fileStream = file.stream();
-
     const headers = new Headers({
       'Container-Name': containerName,
       'Blob-Name': blobName,
     });
 
-    const totalSize = file.size; // Total file size in bytes
-    let uploadedSize = 0; // Tracks the number of bytes uploaded
-
     const reader = fileStream.getReader();
 
-
-    try {
-      const response = await fetch(`${this.baseUrl}/blob/stream-upload`, {
+    return new Observable<void>((observer) => {
+      fetch(`${this.baseUrl}/blob/stream-upload`, {
         method: 'POST',
         headers,
         duplex: 'half',
@@ -128,40 +127,32 @@ export class StorageService {
             function push() {
               reader.read().then(({ done, value }) => {
                 if (done) {
-                  controller.close(); // End the stream
-                  progress$.next(100); // Emit 100% on completion
+                  controller.close();
+                  observer.next(); // Notify completion
+                  observer.complete();
                   return;
                 }
-
-                if (value) {
-                  const chunkSize = value.length; // Size of the current chunk
-                  uploadedSize += chunkSize; // Increment uploaded size
-                  const progress = Math.round((uploadedSize / totalSize) * 100); // Calculate progress
-                  progress$.next(progress); // Emit progress value
-                  console.log(`Uploaded chunk size: ${chunkSize} bytes`);
-                  console.log(`Uploaded so far: ${uploadedSize} bytes (${progress}%)`);
-                }
-
                 controller.enqueue(value); // Pass the chunk to the stream
                 push(); // Continue reading the next chunk
+              }).catch((error) => {
+                observer.error(error); // Notify error
               });
             }
             push();
           },
-        }) ,
-      } as RequestInit);
-
-      if (response.ok) {
-        console.log('File uploaded successfully');
-      } else {
-        console.error('File upload failed:', response.statusText);
-        throw new Error(`Upload failed with status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('Error during upload:', error);
-      throw error;
-    } finally {
-      progress$.complete(); // Notify completion
-    }
+        }),
+      } as RequestInit)
+        .then((response) => {
+          if (response.ok) {
+            observer.next(); // Notify success
+            observer.complete(); // Complete the observable
+          } else {
+            observer.error(new Error(`Upload failed with status: ${response.status}`));
+          }
+        })
+        .catch((error) => {
+          observer.error(error); // Notify error
+        });
+    });
   }
 }

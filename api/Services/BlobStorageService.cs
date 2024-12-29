@@ -18,7 +18,7 @@ public class BlobStorageService : IBlobStorageService
         _blobServiceClient = new BlobServiceClient(connectionString);
     }
 
-    public async Task UploadBlobAsync(string containerName, string blobName, Stream content)
+    public async Task UploadBlobAsync(string containerName, string blobName, Stream content, string contentType)
     {
         if (!IsValidContainerName(containerName))
         {
@@ -30,10 +30,19 @@ public class BlobStorageService : IBlobStorageService
         await containerClient.CreateIfNotExistsAsync();
 
         var blobClient = containerClient.GetBlobClient(blobNameWithTimestamp);
-        await blobClient.UploadAsync(content, overwrite: true);
+
+        var blobHttpHeaders = new BlobHttpHeaders
+        {
+            ContentType = contentType
+        };
+
+        await blobClient.UploadAsync(content, new BlobUploadOptions
+        {
+            HttpHeaders = blobHttpHeaders
+        });
     }
 
-    public async Task UploadLargeBlobAsync(string containerName, string blobName, Stream content, int blockSize = 4 * 1024 * 1024)
+    public async Task UploadLargeBlobAsync(string containerName, string blobName, Stream content, string contentType, int blockSize = 4 * 1024 * 1024)
     {
         if (!IsValidContainerName(containerName))
         {
@@ -41,8 +50,9 @@ public class BlobStorageService : IBlobStorageService
         }
         var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
         await containerClient.CreateIfNotExistsAsync();
+        string blobNameWithTimestamp = GenerateBlobNameWithTimestamp(blobName);
+        var blockBlobClient = containerClient.GetBlockBlobClient(blobNameWithTimestamp);
 
-        var blockBlobClient = containerClient.GetBlockBlobClient(blobName);
         var blockList = new List<string>();
         int blockNumber = 0;
         byte[] buffer = new byte[blockSize];
@@ -58,9 +68,14 @@ public class BlobStorageService : IBlobStorageService
         }
 
         await blockBlobClient.CommitBlockListAsync(blockList);
+
+        await blockBlobClient.SetHttpHeadersAsync(new BlobHttpHeaders
+        {
+            ContentType = contentType
+        });
     }
 
-    public async Task UploadChunkAsync(string containerName, string blobName, Stream chunkData, int chunkIndex, int totalChunks)
+    public async Task UploadChunkAsync(string containerName, string blobName, Stream chunkData, int chunkIndex, int totalChunks, string contentType)
     {
         if (!IsValidContainerName(containerName))
         {
@@ -90,6 +105,12 @@ public class BlobStorageService : IBlobStorageService
 
             // Commit the block list to assemble the final blob
             await blockBlobClient.CommitBlockListAsync(blockList);
+
+            // Set the Content-Type for the blob
+            await blockBlobClient.SetHttpHeadersAsync(new BlobHttpHeaders
+            {
+                ContentType = contentType
+            });
         }
     }
 
@@ -147,6 +168,7 @@ public class BlobStorageService : IBlobStorageService
                 Name = blobItem.Name,
                 CreatedOn = blobItem.Properties.CreatedOn,
                 Metadata = blobItem.Metadata,
+                ContentType = blobItem.Properties.ContentType
             };
 
             if (includeSasUri && sasExpiryTime.HasValue)
