@@ -1,5 +1,7 @@
 # Azure Blob Storage Example with .NET API and Angular
 
+[https://nitinksingh.com/efficient-file-management-on-azure-blob-storage-crud-operations-and-upload-strategies](https://nitinksingh.com/efficient-file-management-on-azure-blob-storage-crud-operations-and-upload-strategies)
+
 ## About the Repository
 This repository showcases a comprehensive example of Azure Blob Storage integration using a modern tech stack:
 
