@@ -47,8 +47,8 @@ export class FileListComponent implements OnInit {
 
   openDetails(file: any): void {
     this.dialog.open(BlobDetailsDialogComponent, {
-      width: '1200px',
-      height: '600px',
+      width: '1900px',
+      height: '800px',
       data: file,
     });
   }

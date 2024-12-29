@@ -21,11 +21,13 @@
       </button>
     </mat-list-item>
   </mat-list>
-
-  <button mat-raised-button color="primary" [disabled]="files.length === 0" (click)="uploadFileStream()">
+  <button mat-raised-button color="primary" [disabled]="files.length === 0" (click)="uploadMultipartFormData()">
+    Upload MultForm Data
+  </button>
+  <button mat-raised-button color="secondary" [disabled]="files.length === 0" (click)="UploadFileStream()">
     Upload Files Stream
   </button>
-  <button mat-raised-button color="secondary" [disabled]="files.length === 0" (click)="uploadFilesChunk()">
+  <button mat-raised-button color="secondary" [disabled]="files.length === 0" (click)="UploadFilesChunk()">
     upload Files Chunk
   </button>
 

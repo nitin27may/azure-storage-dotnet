@@ -52,7 +52,7 @@ export class FileUploadComponent {
     this.files.splice(index, 1);
   }
 
-  uploadFilesChunk(): void {
+  UploadFilesChunk(): void {
     this.uploading = true;
     if (!this.files.length) {
       alert('Please select a file first!');
@@ -88,7 +88,7 @@ export class FileUploadComponent {
   }
 
 
-  async uploadFileStream(): Promise<void> {
+  UploadFileStream(): void {
     if (!this.files) {
       alert('Please select a file!');
       return;
@@ -97,23 +97,41 @@ export class FileUploadComponent {
     const containerName = 'my-container'; // Replace with your container name
     const blobName = this.files[0].name;
 
-    this.progress$.subscribe({
+    this.storageService.streamUpload(this.files[0], containerName, blobName).subscribe({
+      next: () => {
+        this.showToast('File uploaded successfully!', 'success');
+        this.reset();
+      },
+      error: (error) => {
+        console.error('Error during upload:', error);
+      },
+      complete: () => {
+        this.uploading = false;
+      }
+    });
+  }
+
+  uploadMultipartFormData(){
+    if (!this.files) {
+      alert('Please select a file!');
+      return;
+    }
+    const containerName = 'my-container'; // Replace with your container name
+    const blobName = this.files[0].name;
+    this.storageService.uploadFile(this.files[0], containerName, blobName).subscribe({
       next: (value) => {
         this.progress = value;
-        console.log(`Progress: ${value}%`);
       },
       error: (error) => {
         console.error('Progress subscription error:', error);
       },
+      complete: () => {
+        console.log('File uploaded successfully!');
+        this.showToast('File uploaded successfully!', 'success');
+        this.reset();
+      }
     });
-    try {
-      await this.storageService.streamUpload(this.files[0], containerName, blobName, this.progress$);
-      this.showToast('All files uploaded successfully!', 'success');
-    } catch (error) {
-      alert('Failed to upload file.');
-    } finally {
-      this.uploading = false;
-    }
+
   }
 
   reset(): void {

@@ -1,4 +1,5 @@
 ﻿using AzureBlobApi.Services;
+using AzureStorageApi;
 using AzureStorageApi.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +21,8 @@ public class BlobStorageController : ControllerBase
     public async Task<IActionResult> UploadBlobAsync([FromForm] BlobUploadRequest request)
     {
         using var stream = request.File.OpenReadStream();
-        await _blobStorageService.UploadBlobAsync(request.ContainerName, request.BlobName, stream);
+        var contentType = ContentTypeHelper.GetContentType(request.File.FileName);
+        await _blobStorageService.UploadBlobAsync(request.ContainerName, request.BlobName, stream, contentType);
         return Ok();
     }
 
@@ -30,7 +32,8 @@ public class BlobStorageController : ControllerBase
     public async Task<IActionResult> UploadLargeBlobAsync([FromForm] BlobUploadRequest request)
     {
         using var stream = request.File.OpenReadStream();
-        await _blobStorageService.UploadLargeBlobAsync(request.ContainerName, request.BlobName, stream);
+        var contentType = ContentTypeHelper.GetContentType(request.File.FileName);
+        await _blobStorageService.UploadLargeBlobAsync(request.ContainerName, request.BlobName, stream, contentType);
         return Ok();
     }
 
@@ -50,9 +53,10 @@ public class BlobStorageController : ControllerBase
             // Stream data from the client directly to Azure Blob Storage
             using var stream = Request.Body;
 
-            // Infer the Content-Type
+            // Infer the Content-Type based on the blob name (file extension)
+            var contentType = ContentTypeHelper.GetContentType(blobName);
 
-            await _blobStorageService.UploadBlobAsync(containerName, blobName, stream);
+            await _blobStorageService.UploadBlobAsync(containerName, blobName, stream, contentType);
 
             return Ok(new { Message = "File uploaded successfully." });
         }
@@ -63,25 +67,23 @@ public class BlobStorageController : ControllerBase
     }
 
     [HttpPost("upload-chunk")]
-    public async Task<IActionResult> UploadChunk(
-        [FromForm] IFormFile chunk,
-        [FromForm] string containerName,
-        [FromForm] string blobName,
-        [FromForm] int chunkIndex,
-        [FromForm] int totalChunks)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadChunk([FromForm] UploadChunkRequest request)
     {
-        if (chunk == null || chunk.Length == 0)
+        if (request.Chunk == null || request.Chunk.Length == 0)
         {
             return BadRequest(new { Message = "Chunk is missing or empty." });
         }
 
         try
         {
+            // Infer the Content-Type based on the chunk file name
+            var contentType = ContentTypeHelper.GetContentType(request.Chunk.FileName);
             // Stream the chunk to the service
-            using var stream = chunk.OpenReadStream();
-            await _blobStorageService.UploadChunkAsync(containerName, blobName, stream, chunkIndex, totalChunks);
+            using var stream = request.Chunk.OpenReadStream();
+            await _blobStorageService.UploadChunkAsync(request.ContainerName, request.BlobName, stream, request.ChunkIndex, request.TotalChunks, contentType);
 
-            return Ok(new { Message = $"Chunk {chunkIndex + 1}/{totalChunks} uploaded successfully." });
+            return Ok(new { Message = $"Chunk {request.ChunkIndex + 1}/{request.TotalChunks} uploaded successfully." });
         }
         catch (Exception ex)
         {
