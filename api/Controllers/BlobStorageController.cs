@@ -125,4 +125,29 @@ public class BlobStorageController : ControllerBase
         var blobs = await _blobStorageService.GetAllBlobsAsync(containerName, path, true, DateTimeOffset.UtcNow.AddHours(1));
         return Ok(blobs);
     }
+
+    [HttpPost("get-upload-url")]
+    public async Task<ActionResult<LargeFileUploadResponse>> GetUploadUrlAsync([FromBody] LargeFileUploadRequest request)
+    {
+        try
+        {
+            var sasDetails = await _blobStorageService.GetUploadSasUrlAsync(
+                request.ContainerName,
+                request.FileName,
+                request.ContentType
+            );
+
+            return Ok(new LargeFileUploadResponse
+            {
+                SasUri = sasDetails.SasUri,
+                BlobName = sasDetails.BlobName,
+                ExpiresOn = sasDetails.ExpiresOn,
+                ContainerName = request.ContainerName
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 }

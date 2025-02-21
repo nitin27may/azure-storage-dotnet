@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { map, Observable, Subject, switchMap } from 'rxjs';
 import { environment } from "../environments/environment";
 
 @Injectable({ providedIn: 'root' })
@@ -18,7 +18,7 @@ export class StorageService {
     return this.http.post(`${this.baseUrl}/blob/upload`, formData);
   }
 
-  uploadLargeFile(file: File, containerName: string, blobName: string): Observable<any> {
+  uploadLargeFile1(file: File, containerName: string, blobName: string): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('containerName', containerName);
@@ -155,4 +155,90 @@ export class StorageService {
         });
     });
   }
+
+  uploadLargeFile(
+    file: File,
+    containerName: string,
+    onProgress?: (progress: UploadProgress) => void
+  ): Observable<any> {
+    // Step 1: Get upload URL
+    const request: LargeFileUploadRequest = {
+      containerName,
+      fileName: file.name,
+      contentType: file.type,
+      fileSize: file.size
+    };
+
+    return this.http.post<LargeFileUploadResponse>(
+      `${this.baseUrl}/blob/get-upload-url`,
+      request
+    ).pipe(
+      switchMap(response => this.uploadToBlob(file, response.sasUri, onProgress))
+    );
+  }
+
+  private uploadToBlob(
+    file: File,
+    sasUrl: string,
+    onProgress?: (progress: UploadProgress) => void
+  ): Observable<any> {
+    return new Observable(observer => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.onprogress = (event) => {
+        if (onProgress) {
+          onProgress({
+            loaded: event.loaded,
+            total: event.total,
+            percentage: Math.round((event.loaded / event.total) * 100)
+          });
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          observer.next(xhr.response);
+          observer.complete();
+        } else {
+          observer.error(new Error(`Upload failed: ${xhr.statusText}`));
+        }
+      };
+
+      xhr.onerror = () => {
+        observer.error(new Error('Upload failed'));
+      };
+
+      xhr.open('PUT', sasUrl, true);
+      xhr.setRequestHeader('x-ms-blob-type', 'BlockBlob');
+      xhr.setRequestHeader('Content-Type', file.type);
+
+      xhr.send(file);
+
+      return () => {
+        xhr.abort();
+      };
+    });
+  }
+}
+
+
+
+export interface UploadProgress {
+  loaded: number;
+  total: number;
+  percentage: number;
+}
+
+export interface LargeFileUploadRequest {
+  containerName: string;
+  fileName: string;
+  contentType: string;
+  fileSize: number;
+}
+
+export interface LargeFileUploadResponse {
+  sasUri: string;
+  blobName: string;
+  expiresOn: string;
+  containerName: string;
 }

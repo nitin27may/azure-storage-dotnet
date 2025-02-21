@@ -15,22 +15,65 @@
 
   <mat-list>
     <mat-list-item *ngFor="let file of files; let i = index">
-      {{file.name}}
+      {{ file.name }}
       <button mat-icon-button color="warn" (click)="removeFile(i)">
         <mat-icon>delete</mat-icon>
       </button>
     </mat-list-item>
   </mat-list>
-  <button mat-raised-button color="primary" [disabled]="files.length === 0" (click)="uploadMultipartFormData()">
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="files.length === 0"
+    (click)="uploadMultipartFormData()"
+  >
     Upload MultForm Data
   </button>
-  <button mat-raised-button color="secondary" [disabled]="files.length === 0" (click)="UploadFileStream()">
+  <button
+    mat-raised-button
+    color="secondary"
+    [disabled]="files.length === 0"
+    (click)="UploadFileStream()"
+  >
     Upload Files Stream
   </button>
-  <button mat-raised-button color="secondary" [disabled]="files.length === 0" (click)="UploadFilesChunk()">
+  <button
+    mat-raised-button
+    color="secondary"
+    [disabled]="files.length === 0"
+    (click)="UploadFilesChunk()"
+  >
     upload Files Chunk
   </button>
-
-  <mat-progress-bar *ngIf="uploading" mode="determinate" [value]="progress"></mat-progress-bar>
+  <button
+    mat-raised-button
+    color="secondary"
+    [disabled]="files.length === 0"
+    (click)="UploadLargeFile()"
+  >
+   Upload Large File
+  </button>
+  <mat-progress-bar
+    *ngIf="uploading"
+    mode="determinate"
+    [value]="progress"
+  ></mat-progress-bar>
   <p *ngIf="uploading">Progress: {{ progress }}%</p>
+</div>
+
+<div *ngIf="currentUpload" class="upload-progress">
+  <div class="progress-details">
+    <span>{{ currentUpload.fileName }}</span>
+    <span>{{ currentUpload.progress.percentage }}%</span>
+  </div>
+  <div class="progress-bar">
+    <div
+      class="progress-fill"
+      [style.width.%]="currentUpload.progress.percentage"
+    ></div>
+  </div>
+</div>
+
+<div *ngIf="errorMessage" class="error-message">
+  {{ errorMessage }}
 </div>

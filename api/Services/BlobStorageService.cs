@@ -200,7 +200,47 @@ public class BlobStorageService : IBlobStorageService
         return properties.Value.ContentHash != null &&
                Convert.ToBase64String(properties.Value.ContentHash) == expectedChecksum;
     }
+    public async Task<BlobSasDetails> GetUploadSasUrlAsync(string containerName, string blobName, string contentType)
+    {
+        if (!IsValidContainerName(containerName))
+        {
+            throw new ArgumentException("Invalid container name.");
+        }
 
+        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+        await containerClient.CreateIfNotExistsAsync();
+
+        // Generate unique blob name with timestamp
+        string blobNameWithTimestamp = GenerateBlobNameWithTimestamp(blobName);
+        var blobClient = containerClient.GetBlobClient(blobNameWithTimestamp);
+
+        // Create SAS token with write permission
+        var sasBuilder = new BlobSasBuilder
+        {
+            BlobContainerName = containerName,
+            BlobName = blobNameWithTimestamp,
+            Resource = "b", // b for blob
+            StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5), // Allow for clock skew
+            ExpiresOn = DateTimeOffset.UtcNow.AddHours(1) // 1 hour validity
+        };
+
+        // Set permissions for upload
+        sasBuilder.SetPermissions(BlobSasPermissions.Write | BlobSasPermissions.Create);
+
+        // Generate SAS URI
+        var sasUri = blobClient.GenerateSasUri(sasBuilder);
+
+        // Set the content type
+        //var headers = new BlobHttpHeaders { ContentType = contentType };
+        //await blobClient.SetHttpHeadersAsync(headers);
+
+        return new BlobSasDetails
+        {
+            SasUri = sasUri.ToString(),
+            BlobName = blobNameWithTimestamp,
+            ExpiresOn = sasBuilder.ExpiresOn
+        };
+    }
     private bool IsValidContainerName(string containerName)
     {
         // Implement validation logic for container name

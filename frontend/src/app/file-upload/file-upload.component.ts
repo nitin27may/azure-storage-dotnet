@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { StorageService } from '../storage.service';
+import { StorageService, UploadProgress } from '../storage.service';
 import { RouterModule } from "@angular/router";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { Subject } from "rxjs";
@@ -28,6 +28,14 @@ import { Subject } from "rxjs";
   providers: [StorageService]
 })
 export class FileUploadComponent {
+
+  isDragging = false;
+  isUploading = false;
+  errorMessage = '';
+  currentUpload: {
+    fileName: string;
+    progress: UploadProgress;
+  } | null = null;
   files: File[] = [];
   uploading: boolean = false;
   progress: number = 0; // Progress value (0-100)
@@ -134,6 +142,52 @@ export class FileUploadComponent {
 
   }
 
+  UploadLargeFile() {
+    if (!this.files) {
+      alert('Please select a file!');
+      return;
+    }
+    if (this.files.length > 0) {
+      this.uploadFile(this.files[0]);
+    }
+  }
+
+  private uploadFile(file: File) {
+    if (this.uploading) {
+      return;
+    }
+
+    this.uploading = true;
+    this.errorMessage = '';
+    this.currentUpload = {
+      fileName: file.name,
+      progress: { loaded: 0, total: file.size, percentage: 0 }
+    };
+
+    this.storageService.uploadLargeFile(
+      file,
+      'my-container', // Replace with your container name
+      (progress) => {
+        this.currentUpload = {
+          fileName: file.name,
+          progress
+        };
+      }
+    ).subscribe({
+      next: () => {
+        console.log('Upload completed successfully');
+        this.isUploading = false;
+        setTimeout(() => {
+          this.currentUpload = null;
+        }, 2000);
+      },
+      error: (error) => {
+        console.error('Upload failed:', error);
+        this.errorMessage = 'Upload failed. Please try again.';
+        this.isUploading = false;
+      }
+    });
+  }
   reset(): void {
     this.files = []; // Clear the files array
     this.progress = 0; // Reset progress
