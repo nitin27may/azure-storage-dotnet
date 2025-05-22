@@ -152,12 +152,12 @@ sequenceDiagram
 
 ### Key Differences
 
-| Method | Direct Upload to Azure | Chunked | Memory Usage | Progress Tracking | Resumable | Best for |
-|--------|------------------------|---------|--------------|-------------------|-----------|----------|
-| Standard | No | No | High | Simple | No | Small files |
-| Chunked | No | Yes | Medium | Detailed | Possible | Medium-large files |
-| Stream | No | Implicit | Low | Limited | No | Any size, modern browsers |
-| SAS | Yes | No | Medium | Detailed | No | Very large files in production |
+| Method | Direct Upload to Azure | Chunked | Client Memory | Server Memory | Progress Tracking | Resumable | Best for |
+|--------|------------------------|---------|--------------|--------------|-------------------|-----------|----------|
+| Standard | No | No | High | High | Simple | No | Small files |
+| Chunked | No | Yes | Medium | Minimal | Detailed | Possible | Medium-large files |
+| Stream | No | Implicit | Very Low | Low | Limited | No | Any size, modern browsers |
+| SAS | Yes | No | Medium | Minimal | Detailed | No | Very large files in production |
 
 ---
 ## Features
