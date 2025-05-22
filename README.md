@@ -28,9 +28,9 @@ flowchart LR
     API[.NET API Server]
     Azure[(Azure Blob Storage)]
     
-    Client -->|1. HTTP POST with FormData| API
-    API -->|2. Upload via SDK| Azure
-    API -->|3. Success Response| Client
+    Client -- "HTTP POST with FormData" --> API
+    API -- "Upload via SDK" --> Azure
+    API -- "Success Response" --> Client
     
     classDef client fill:#f9f,stroke:#333,stroke-width:1px;
     classDef api fill:#bbf,stroke:#333,stroke-width:1px;
@@ -52,15 +52,15 @@ flowchart LR
     API[.NET API Server]
     Azure[(Azure Blob Storage)]
     
-    Client -->|1. Split file into chunks| Client
-    Client -->|2. HTTP POST chunk 1| API
-    API -->|3. Upload chunk| Azure
-    Client -->|4. HTTP POST chunk 2| API
-    API -->|5. Upload chunk| Azure
-    Client -->|6. HTTP POST chunk N| API
-    API -->|7. Upload chunk| Azure
-    API -->|8. Combine chunks| Azure
-    API -->|9. Success Response| Client
+    Client -- "Split file into chunks" --> Client
+    Client -- "HTTP POST chunk #1" --> API
+    API -- "Upload chunk" --> Azure
+    Client -- "HTTP POST chunk #2" --> API
+    API -- "Upload chunk" --> Azure
+    Client -- "HTTP POST final chunk" --> API
+    API -- "Upload chunk" --> Azure
+    API -- "Combine chunks" --> Azure
+    API -- "Success Response" --> Client
     
     classDef client fill:#f9f,stroke:#333,stroke-width:1px;
     classDef api fill:#bbf,stroke:#333,stroke-width:1px;
@@ -82,10 +82,10 @@ flowchart LR
     API[.NET API Server]
     Azure[(Azure Blob Storage)]
     
-    Client -->|1. Initialize file stream| Client
-    Client -->|2. HTTP POST stream data| API
-    API -->|3. Stream to Azure| Azure
-    API -->|4. Success Response| Client
+    Client -- "Initialize file stream" --> Client
+    Client -- "HTTP POST stream data" --> API
+    API -- "Stream to Azure" --> Azure
+    API -- "Success Response" --> Client
     
     classDef client fill:#f9f,stroke:#333,stroke-width:1px;
     classDef api fill:#bbf,stroke:#333,stroke-width:1px;
@@ -114,12 +114,12 @@ flowchart LR
     
     Azure[(Azure Blob Storage)]
     
-    File -->|1. Selected for upload| XMLReq
-    Client -->|2. Request SAS URL| Server
-    Server -->|3. Generate SAS URL| Server
-    Server -->|4. Return SAS URL| Client
-    XMLReq -->|5. Direct upload with progress tracking| Azure
-    Azure -->|6. Upload confirmation| Client
+    File -- "Selected for upload" --> XMLReq
+    Client -- "Request SAS URL" --> Server
+    Server -- "Generate SAS URL" --> Server
+    Server -- "Return SAS URL" --> Client
+    XMLReq -- "Direct upload with progress tracking" --> Azure
+    Azure -- "Upload confirmation" --> Client
     
     classDef client fill:#f9f,stroke:#333,stroke-width:1px;
     classDef server fill:#bbf,stroke:#333,stroke-width:1px;
