@@ -5,6 +5,7 @@ using Azure.Storage.Sas;
 using AzureStorageApi.Models;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace AzureBlobApi.Services;
 
@@ -130,7 +131,7 @@ public class BlobStorageService : IBlobStorageService
         return memoryStream.ToArray();
     }
 
-    public async Task<string> GetBlobSasUriAsync(string containerName, string blobName, DateTimeOffset expiryTime)
+    public string GetBlobSasUri(string containerName, string blobName, DateTimeOffset expiryTime)
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
         var blobClient = containerClient.GetBlobClient(blobName);
@@ -168,12 +169,13 @@ public class BlobStorageService : IBlobStorageService
                 Name = blobItem.Name,
                 CreatedOn = blobItem.Properties.CreatedOn,
                 Metadata = blobItem.Metadata,
-                ContentType = blobItem.Properties.ContentType
+                ContentType = blobItem.Properties.ContentType,
+                Size = blobItem.Properties.ContentLength ?? 0 // Add file size
             };
 
             if (includeSasUri && sasExpiryTime.HasValue)
             {
-                blobDetails.SasUri = await GetBlobSasUriAsync(containerName, blobItem.Name, sasExpiryTime.Value);
+                blobDetails.SasUri = GetBlobSasUri(containerName, blobItem.Name, sasExpiryTime.Value);
             }
 
             blobDetailsList.Add(blobDetails);
@@ -214,7 +216,7 @@ public class BlobStorageService : IBlobStorageService
         string blobNameWithTimestamp = GenerateBlobNameWithTimestamp(blobName);
         var blobClient = containerClient.GetBlobClient(blobNameWithTimestamp);
 
-        // Create SAS token with write permission
+        // Create SAS token with more permissions to ensure upload works
         var sasBuilder = new BlobSasBuilder
         {
             BlobContainerName = containerName,
@@ -224,15 +226,13 @@ public class BlobStorageService : IBlobStorageService
             ExpiresOn = DateTimeOffset.UtcNow.AddHours(1) // 1 hour validity
         };
 
-        // Set permissions for upload
-        sasBuilder.SetPermissions(BlobSasPermissions.Write | BlobSasPermissions.Create);
+        // Make sure we have ALL necessary permissions for uploading
+        sasBuilder.SetPermissions(BlobSasPermissions.Write | 
+                                  BlobSasPermissions.Create | 
+                                  BlobSasPermissions.Add);
 
         // Generate SAS URI
         var sasUri = blobClient.GenerateSasUri(sasBuilder);
-
-        // Set the content type
-        //var headers = new BlobHttpHeaders { ContentType = contentType };
-        //await blobClient.SetHttpHeadersAsync(headers);
 
         return new BlobSasDetails
         {
@@ -241,6 +241,8 @@ public class BlobStorageService : IBlobStorageService
             ExpiresOn = sasBuilder.ExpiresOn
         };
     }
+    
+    
     private bool IsValidContainerName(string containerName)
     {
         // Implement validation logic for container name

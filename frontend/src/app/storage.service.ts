@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable, Subject, switchMap } from 'rxjs';
 import { environment } from "../environments/environment";
 
@@ -173,20 +173,16 @@ export class StorageService {
       `${this.baseUrl}/blob/get-upload-url`,
       request
     ).pipe(
-      switchMap(response => this.uploadToBlob(file, response.sasUri, onProgress))
+      switchMap(response => this.UploadFileToSAS(file, response.sasUri, onProgress)),
     );
   }
 
-  private uploadToBlob(
-    file: File,
-    sasUrl: string,
-    onProgress?: (progress: UploadProgress) => void
-  ): Observable<any> {
+  UploadFileToSAS(file: File, sasUrl: string, onProgress?: (progress: UploadProgress) => void): Observable<any> {
     return new Observable(observer => {
       const xhr = new XMLHttpRequest();
 
       xhr.upload.onprogress = (event) => {
-        if (onProgress) {
+        if (onProgress && event.lengthComputable) {
           onProgress({
             loaded: event.loaded,
             total: event.total,
@@ -200,24 +196,57 @@ export class StorageService {
           observer.next(xhr.response);
           observer.complete();
         } else {
-          observer.error(new Error(`Upload failed: ${xhr.statusText}`));
+          console.error('Upload failed with status:', xhr.status);
+          console.error('Response:', xhr.responseText);
+          observer.error(new Error(`Upload failed: ${xhr.status} ${xhr.statusText} - ${xhr.responseText || 'No response details'}`));
         }
       };
 
-      xhr.onerror = () => {
-        observer.error(new Error('Upload failed'));
+      xhr.onerror = (error) => {
+        console.error('Upload error:', error);
+        observer.error(new Error(`Network error during upload: ${error instanceof Error ? error.message : 'Unknown error'}`));
       };
 
+      xhr.onabort = () => {
+        observer.error(new Error('Upload aborted by user'));
+      };
+      
       xhr.open('PUT', sasUrl, true);
+      
+      // These headers are required for Azure Blob Storage
       xhr.setRequestHeader('x-ms-blob-type', 'BlockBlob');
-      xhr.setRequestHeader('Content-Type', file.type);
+      
+      // Content type header
+      const contentType = file.type || 'application/octet-stream';
+      xhr.setRequestHeader('Content-Type', contentType);
 
+      // Send the file
       xhr.send(file);
 
       return () => {
         xhr.abort();
       };
     });
+  }
+  
+
+  downloadBytes(file: any): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/blob/download-bytes?containerName=${file.containerName}&blobName=${file.name}`, 
+      { responseType: 'blob' }
+    );
+  }
+  
+  downloadStream(file: any): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/blob/download-stream?containerName=${file.containerName}&blobName=${file.name}`, 
+      { responseType: 'blob' }
+    ).pipe(
+      map(blob => {
+        // Create a blob URL for the file
+        return new Blob([blob], { type: file.contentType || 'application/octet-stream' });
+      })
+    );
   }
 }
 

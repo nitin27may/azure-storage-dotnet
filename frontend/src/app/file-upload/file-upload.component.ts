@@ -143,51 +143,84 @@ export class FileUploadComponent {
   }
 
   UploadLargeFile() {
-    if (!this.files) {
+    if (!this.files || this.files.length === 0) {
       alert('Please select a file!');
       return;
     }
-    if (this.files.length > 0) {
-      this.uploadFile(this.files[0]);
-    }
-  }
-
-  private uploadFile(file: File) {
+    
+    // Don't proceed if already uploading
     if (this.uploading) {
       return;
     }
-
+    
     this.uploading = true;
     this.errorMessage = '';
+    const file = this.files[0];
+    
+    // Initialize progress tracking
     this.currentUpload = {
       fileName: file.name,
       progress: { loaded: 0, total: file.size, percentage: 0 }
     };
-
+    
+    // Single upload subscription
     this.storageService.uploadLargeFile(
       file,
-      'my-container', // Replace with your container name
+      'my-container',
       (progress) => {
+        // Update progress in UI
         this.currentUpload = {
           fileName: file.name,
           progress
         };
+        this.progress = progress.percentage;
+        this.cdr.detectChanges(); // Ensure UI updates
       }
     ).subscribe({
-      next: () => {
-        console.log('Upload completed successfully');
-        this.isUploading = false;
+      next: (response) => {
+        console.log('Upload completed successfully:', response);
+        
+        // Ensure the UI shows 100% before showing success
+        this.progress = 100;
+        this.currentUpload = {
+          fileName: file.name,
+          progress: { loaded: file.size, total: file.size, percentage: 100 }
+        };
+        
+        // Show the success message and force change detection
+        this.showToast('File uploaded successfully to Azure Blob Storage!', 'success');
+        this.cdr.detectChanges();
+        
+        // Keep 100% progress visible for a moment before resetting
         setTimeout(() => {
-          this.currentUpload = null;
-        }, 2000);
+          this.reset();
+        }, 2000); // Increased timeout to ensure message is visible
       },
       error: (error) => {
         console.error('Upload failed:', error);
-        this.errorMessage = 'Upload failed. Please try again.';
-        this.isUploading = false;
+        this.errorMessage = `Upload failed: ${error.message}`;
+        this.showToast(`Upload failed: ${error.message}`, 'error');
+        this.uploading = false;
+        this.currentUpload = null;
+        this.cdr.detectChanges();
+      },
+      complete: () => {
+        console.log('Upload observable completed');
+        
+        // Add a backup success message in complete handler in case 'next' isn't called
+        if (this.uploading) {
+          this.showToast('File upload completed successfully!', 'success');
+          this.cdr.detectChanges();
+          
+          // Reset after a delay
+          setTimeout(() => {
+            this.reset();
+          }, 2000);
+        }
       }
     });
   }
+
   reset(): void {
     this.files = []; // Clear the files array
     this.progress = 0; // Reset progress
@@ -214,10 +247,10 @@ export class FileUploadComponent {
     }
 
     this.snackBar.open(message, 'Close', {
-      duration: 5000, // Toast will auto-dismiss after 3 seconds
-      horizontalPosition: 'right', // Position: right
+      duration: 8000, // Increased duration to 8 seconds for better visibility
+      horizontalPosition: 'center', // Changed to center for better visibility
       verticalPosition: 'top', // Position: top
-      panelClass: [panelClass], // Custom panel class for styling
+      panelClass: [panelClass, 'toast-notification'], // Added a general class for easier customization
     });
   }
 }

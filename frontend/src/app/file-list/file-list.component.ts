@@ -9,6 +9,7 @@ import { MatCardModule } from '@angular/material/card';
 import { StorageService } from '../storage.service';
 import { BlobDetailsDialogComponent } from "../blob-details/blob-details.component";
 import { MatDialog } from "@angular/material/dialog";
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-file-list',
@@ -27,7 +28,7 @@ import { MatDialog } from "@angular/material/dialog";
 })
 export class FileListComponent implements OnInit {
   files: any[] = [];
-  displayedColumns: string[] = ['name', 'createdOn', 'sasUrl'];
+  displayedColumns: string[] = ['name', 'size', 'lastModified', 'sasUrl', 'downloadByte', 'downloadStream'];
 
   constructor(private storageService: StorageService, private dialog: MatDialog) {}
 
@@ -50,6 +51,28 @@ export class FileListComponent implements OnInit {
       width: '1900px',
       height: '800px',
       data: file,
+    });
+  }
+
+  downloadBytes(file: any): void {
+    this.storageService.downloadBytes(file).subscribe({
+      next: (blob) => {
+        saveAs(blob, file.name);
+      },
+      error: (error) => {
+        console.error('Error downloading file:', error);
+      }
+    });
+  }
+
+  downloadStream(file: any): void {
+    this.storageService.downloadStream(file).subscribe({
+      next: (blob) => {
+        saveAs(blob, file.name);
+      },
+      error: (error) => {
+        console.error('Error streaming file:', error);
+      }
     });
   }
 }

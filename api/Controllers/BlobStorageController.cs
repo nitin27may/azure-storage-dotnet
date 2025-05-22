@@ -108,7 +108,7 @@ public class BlobStorageController : ControllerBase
     [HttpGet("sas")] // GET api/blob/sas
     public async Task<IActionResult> GetBlobSasUriAsync(string containerName, string blobName, DateTimeOffset expiryTime)
     {
-        var sasUri = await _blobStorageService.GetBlobSasUriAsync(containerName, blobName, expiryTime);
+        var sasUri = _blobStorageService.GetBlobSasUri(containerName, blobName, expiryTime);
         return Ok(sasUri);
     }
 
@@ -131,11 +131,20 @@ public class BlobStorageController : ControllerBase
     {
         try
         {
+            // Validate request parameters
+            if (string.IsNullOrEmpty(request.ContainerName) || string.IsNullOrEmpty(request.FileName))
+            {
+                return BadRequest(new { error = "Container name and file name are required" });
+            }
+
             var sasDetails = await _blobStorageService.GetUploadSasUrlAsync(
                 request.ContainerName,
                 request.FileName,
                 request.ContentType
             );
+
+            // Log success for debugging
+            Console.WriteLine($"Generated SAS URL for {request.FileName} in container {request.ContainerName}");
 
             return Ok(new LargeFileUploadResponse
             {
@@ -147,7 +156,11 @@ public class BlobStorageController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { error = ex.Message });
+            // Log the error for detailed debugging
+            Console.WriteLine($"Error generating SAS URL: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            
+            return StatusCode(500, new { error = $"Failed to generate upload URL: {ex.Message}" });
         }
     }
 }

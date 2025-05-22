@@ -24,7 +24,7 @@
   <button
     mat-raised-button
     color="primary"
-    [disabled]="files.length === 0"
+    [disabled]="files.length === 0 || uploading"
     (click)="uploadMultipartFormData()"
   >
     Upload MultForm Data
@@ -32,7 +32,7 @@
   <button
     mat-raised-button
     color="secondary"
-    [disabled]="files.length === 0"
+    [disabled]="files.length === 0 || uploading"
     (click)="UploadFileStream()"
   >
     Upload Files Stream
@@ -40,7 +40,7 @@
   <button
     mat-raised-button
     color="secondary"
-    [disabled]="files.length === 0"
+    [disabled]="files.length === 0 || uploading"
     (click)="UploadFilesChunk()"
   >
     upload Files Chunk
@@ -48,29 +48,41 @@
   <button
     mat-raised-button
     color="secondary"
-    [disabled]="files.length === 0"
+    [disabled]="files.length === 0 || uploading"
     (click)="UploadLargeFile()"
   >
    Upload Large File
   </button>
-  <mat-progress-bar
-    *ngIf="uploading"
-    mode="determinate"
-    [value]="progress"
-  ></mat-progress-bar>
-  <p *ngIf="uploading">Progress: {{ progress }}%</p>
+  
+  <!-- Only show this progress bar when currentUpload is null (for non-SAS uploads) -->
+  <div *ngIf="uploading && !currentUpload && progress < 100" class="progress-container">
+    <mat-progress-bar
+      mode="determinate"
+      [value]="progress"
+    ></mat-progress-bar>
+    <p>Progress: {{ progress }}%</p>
+  </div>
 </div>
 
-<div *ngIf="currentUpload" class="upload-progress">
-  <div class="progress-details">
-    <span>{{ currentUpload.fileName }}</span>
-    <span>{{ currentUpload.progress.percentage }}%</span>
-  </div>
-  <div class="progress-bar">
-    <div
-      class="progress-fill"
-      [style.width.%]="currentUpload.progress.percentage"
-    ></div>
+<!-- Only show this for SAS uploads -->
+<div *ngIf="currentUpload && progress < 100" class="upload-progress-container">
+  <h3>Uploading to Azure Storage with SAS URL</h3>
+  <div class="upload-progress">
+    <div class="progress-details">
+      <span class="filename">{{ currentUpload.fileName }}</span>
+      <span class="progress-text">
+        {{ currentUpload.progress.loaded | number }} / {{ currentUpload.progress.total | number }} bytes
+        ({{ currentUpload.progress.percentage }}%)
+      </span>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar">
+        <div
+          class="progress-fill"
+          [style.width.%]="currentUpload.progress.percentage"
+        ></div>
+      </div>
+    </div>
   </div>
 </div>
 
