@@ -1,7 +1,6 @@
 <mat-toolbar color="primary">
   <span>Document List</span>
   <span class="spacer"></span>
-  <!-- <button mat-raised-button color="accent" routerLink="/upload">Upload Files</button> -->
   <button mat-raised-button color="primary" routerLink="/upload">Add File</button>
 </mat-toolbar>
 
@@ -15,8 +14,18 @@
         <td mat-cell *matCellDef="let file"> {{file.name}} </td>
       </ng-container>
 
-      <!-- Created Date Column -->
-      <ng-container matColumnDef="createdOn">
+      <!-- Size Column -->
+      <ng-container matColumnDef="size">
+        <th mat-header-cell *matHeaderCellDef> Size </th>
+        <td mat-cell *matCellDef="let file"> 
+          {{ file.size | number }} bytes
+          <span *ngIf="file.size >= 1024 * 1024" class="size-mb">({{ file.size / (1024 * 1024) | number:'1.2-2' }} MB)</span>
+          <span *ngIf="file.size < 1024 * 1024 && file.size >= 1024" class="size-kb">({{ file.size / 1024 | number:'1.2-2' }} KB)</span>
+        </td>
+      </ng-container>
+
+      <!-- Last Modified Column -->
+      <ng-container matColumnDef="lastModified">
         <th mat-header-cell *matHeaderCellDef> Created On </th>
         <td mat-cell *matCellDef="let file"> {{file.createdOn | date: 'short'}} </td>
       </ng-container>
@@ -25,7 +34,23 @@
       <ng-container matColumnDef="sasUrl">
         <th mat-header-cell *matHeaderCellDef> Open SAS URL </th>
         <td mat-cell *matCellDef="let file">
-          <a  (click)="openDetails(file)">Open</a>
+          <a mat-button color="primary" (click)="openDetails(file)">Open</a>
+        </td>
+      </ng-container>
+
+      <!-- Download Byte Column -->
+      <ng-container matColumnDef="downloadByte">
+        <th mat-header-cell *matHeaderCellDef> Download Byte</th>
+        <td mat-cell *matCellDef="let file">
+          <a mat-button color="primary" (click)="downloadBytes(file)">Download Byte</a>
+        </td>
+      </ng-container>
+
+      <!-- Download Stream Column -->
+      <ng-container matColumnDef="downloadStream">
+        <th mat-header-cell *matHeaderCellDef> Download Stream</th>
+        <td mat-cell *matCellDef="let file">
+          <a mat-button color="primary" (click)="downloadStream(file)">Download Stream</a>
         </td>
       </ng-container>
 
@@ -34,5 +59,4 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
   </mat-card>
-
 </div>

@@ -15,22 +15,77 @@
 
   <mat-list>
     <mat-list-item *ngFor="let file of files; let i = index">
-      {{file.name}}
+      {{ file.name }}
       <button mat-icon-button color="warn" (click)="removeFile(i)">
         <mat-icon>delete</mat-icon>
       </button>
     </mat-list-item>
   </mat-list>
-  <button mat-raised-button color="primary" [disabled]="files.length === 0" (click)="uploadMultipartFormData()">
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="files.length === 0 || uploading"
+    (click)="uploadMultipartFormData()"
+  >
     Upload MultForm Data
   </button>
-  <button mat-raised-button color="secondary" [disabled]="files.length === 0" (click)="UploadFileStream()">
+  <button
+    mat-raised-button
+    color="secondary"
+    [disabled]="files.length === 0 || uploading"
+    (click)="UploadFileStream()"
+  >
     Upload Files Stream
   </button>
-  <button mat-raised-button color="secondary" [disabled]="files.length === 0" (click)="UploadFilesChunk()">
+  <button
+    mat-raised-button
+    color="secondary"
+    [disabled]="files.length === 0 || uploading"
+    (click)="UploadFilesChunk()"
+  >
     upload Files Chunk
   </button>
+  <button
+    mat-raised-button
+    color="secondary"
+    [disabled]="files.length === 0 || uploading"
+    (click)="UploadLargeFile()"
+  >
+   Upload Large File
+  </button>
+  
+  <!-- Only show this progress bar when currentUpload is null (for non-SAS uploads) -->
+  <div *ngIf="uploading && !currentUpload && progress < 100" class="progress-container">
+    <mat-progress-bar
+      mode="determinate"
+      [value]="progress"
+    ></mat-progress-bar>
+    <p>Progress: {{ progress }}%</p>
+  </div>
+</div>
 
-  <mat-progress-bar *ngIf="uploading" mode="determinate" [value]="progress"></mat-progress-bar>
-  <p *ngIf="uploading">Progress: {{ progress }}%</p>
+<!-- Only show this for SAS uploads -->
+<div *ngIf="currentUpload && progress < 100" class="upload-progress-container">
+  <h3>Uploading to Azure Storage with SAS URL</h3>
+  <div class="upload-progress">
+    <div class="progress-details">
+      <span class="filename">{{ currentUpload.fileName }}</span>
+      <span class="progress-text">
+        {{ currentUpload.progress.loaded | number }} / {{ currentUpload.progress.total | number }} bytes
+        ({{ currentUpload.progress.percentage }}%)
+      </span>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar">
+        <div
+          class="progress-fill"
+          [style.width.%]="currentUpload.progress.percentage"
+        ></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="errorMessage" class="error-message">
+  {{ errorMessage }}
 </div>
